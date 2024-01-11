@@ -1,0 +1,141 @@
+import { Formik, Form, useField } from 'formik';
+import * as Yup from 'yup';
+import {Alert, AlertIcon, Box, Button, FormLabel, Input, Select, Stack} from "@chakra-ui/react";
+import {errorNotification, successNotification} from "../../services/notification.js";
+import {saveMember} from "../../services/client.js";
+
+const MyTextInput = ({ label, ...props }) => {
+    const [field, meta] = useField(props);
+    return (
+        <Box>
+            <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
+            <Input className="text-input" {...field} {...props} />
+            {meta.touched && meta.error ? (
+                <Alert className="error" status={"error"} mt={2}>
+                    <AlertIcon/>
+                    {meta.error}
+                </Alert>
+            ) : null}
+        </Box>
+    );
+};
+
+const MySelect = ({ label, ...props }) => {
+    const [field, meta] = useField(props);
+    return (
+        <Box>
+            <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
+            <Select {...field} {...props} />
+            {meta.touched && meta.error ? (
+                <Alert className="error" status={"error"} mt={2}>
+                    <AlertIcon/>
+                    {meta.error}
+                </Alert>
+            ) : null}
+        </Box>
+    );
+};
+
+const CreateMemberForm = ({onSuccess}) => {
+    return (
+        <>
+            <Formik
+                initialValues={{
+                    name: '',
+                    email: '',
+                    age : 0,
+                    password: '',
+                    gender: ''
+                }}
+                validationSchema={Yup.object({
+                    name: Yup.string()
+                        .max(15, 'Must be 15 characters or less')
+                        .required('Required'),
+                    age: Yup.number()
+                        .min(16, 'Must be at least 16 years of age')
+                        .max(100, 'Must be less than 100 years of age')
+                        .required(),
+                    email: Yup.string()
+                        .email('Invalid email address')
+                        .required('Required'),
+                    password: Yup.string()
+                        .min(8, 'must be 8 characters or more')
+                        .max(15, 'Must be 20 characters or less')
+                        .required('Required'),
+                    gender: Yup.string()
+                        .oneOf(
+                            ['MALE', 'FEMALE', 'NA'],
+                            'Invalid gender'
+                        )
+                        .required('Required'),
+                })}
+                onSubmit={(member, { setSubmitting }) => {
+                    setSubmitting(true);
+                    saveMember(member)
+                        .then(res => {
+                            console.log(res);
+                            successNotification(
+                                "Member saved",
+                                `${member.name} was successfully saved`
+                            )
+                            onSuccess(res.headers["authorization"]);
+                        })
+                        .catch(err => {
+                            console.log(err);
+                            errorNotification(
+                                err.code,
+                                err.response.data.message
+                        )
+                    }).finally(() => {
+                        setSubmitting(false);
+                    })
+                }}
+            >
+
+                {({isValid, isSubmitting}) => (
+                    <Form>
+                        <Stack spacing={"24px"}>
+                            <MyTextInput
+                                label="Name"
+                                name="name"
+                                type="text"
+                                placeholder="Jane"
+                            />
+
+                            <MyTextInput
+                                label="Email Address"
+                                name="email"
+                                type="email"
+                                placeholder="jane@formik.com"
+                            />
+
+                            <MyTextInput
+                                label="Age"
+                                name="age"
+                                type="number"
+                                placeholder="20"
+                            />
+
+                            <MyTextInput
+                                label="Password"
+                                name="password"
+                                type="password"
+                                placeholder={"pick a secure password"}
+                            />
+
+                            <MySelect label="Gender" name="gender" placeholder="Select gender">
+                                <option value="MALE">Male</option>
+                                <option value="FEMALE">Female</option>
+                                <option value="NA">NA</option>
+                            </MySelect>
+
+                            <Button disabled={!isValid || isSubmitting} type="submit">Submit</Button>
+                        </Stack>
+                    </Form>
+                )}
+            </Formik>
+        </>
+    );
+};
+
+export default CreateMemberForm;

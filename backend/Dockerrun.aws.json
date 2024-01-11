@@ -1,0 +1,35 @@
+{
+  "AWSEBDockerrunVersion": 2,
+  "containerDefinitions": [
+    {
+      "name": "backend-api",
+      "image": "ninjacyborg/backend-api:1.0",
+      "essential": true,
+      "memory": 512,
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "containerPort": 8080
+        }
+      ],
+      "environment": [
+        {
+          "name": "SPRING_DATASOURCE_URL",
+          "value": "jdbc:postgresql://awseb-e-izp2xgfyxw-stack-awsebrdsdatabase-urtwcqffty34.cph7lrr0ak8g.us-east-1.rds.amazonaws.com:5432/member"
+        }
+      ]
+    },
+    {
+      "name": "react-ui",
+      "image": "ninjacyborg/react-ui:BUILD_ARGS",
+      "essential": true,
+      "memory": 256,
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "containerPort": 5173
+        }
+      ]
+    }
+  ]
+}

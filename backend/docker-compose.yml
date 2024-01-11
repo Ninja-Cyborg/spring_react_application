@@ -1,0 +1,46 @@
+services:
+  db:
+    container_name: postgres
+    image: postgres:15.3
+    environment:
+      POSTGRES_USER: ninjacyborg
+      POSTGRES_PASSWORD: password
+      PGDATA: /data/postgres
+    volumes:
+      - db:/data/postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - db
+    restart: unless-stopped
+  backend-api:
+    container_name: backend-api
+    image: ninjacyborg/backend-api
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/member
+    ports:
+      - "8080:8080"
+    networks:
+      - db
+    depends_on:
+      - db
+    restart: unless-stopped
+  react-ui:
+    container_name: react-ui
+    image: ninjacyborg/react-ui
+    build:
+      context: frontend/react-ui
+      args:
+        api_base_url: http://localhost:8080
+    ports:
+      - "3000:5173"
+    depends_on:
+      - backend-api
+    restart: unless-stopped
+
+networks:
+  db:
+    driver: bridge
+
+volumes:
+  db:
