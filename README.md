@@ -72,6 +72,10 @@ A Kaleidoscopic Web Experience.
 - Create a Pull Request with your changes against the master branch.
 - Please feel free to reach out. I will be amused. :smiley:
 
+## Some Screen Captures:
+- List Members:
+- ![image](https://github.com/Ninja-Cyborg/spring_react_application/assets/66517017/e9d34dbb-5cb3-44fc-941b-74ae030f95f0)
+
 # FunFact
 "[Kaleidoscopic](https://www.merriam-webster.com/dictionary/kaleidoscopic)" means changing one thing to another
 
