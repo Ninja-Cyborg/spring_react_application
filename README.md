@@ -77,7 +77,7 @@ A Kaleidoscopic Web Experience.
 - ![image](https://github.com/Ninja-Cyborg/spring_react_application/assets/66517017/e9d34dbb-5cb3-44fc-941b-74ae030f95f0)
 
 # FunFact
-"[Kaleidoscopic](https://www.merriam-webster.com/dictionary/kaleidoscopic)" means changing one thing to another
+"[Kaleidoscopic](https://dictionary.cambridge.org/dictionary/english/kaleidoscopic)" means quickly changing one thing to another.
 
 ## Why the name **KaleidoHub**?
 This is one of the most robust applications I have developed. I plan to add more features and expand it while also learning to implement and integrate different technologies. Its decoupled architecture allows one to make quick changes and it has immense potential for expansion, from adding more features to integrating it as an in-built chat in a game or using a completely different language in a component. Featuring a single version with the versatility for multi-expansions, embodying a kaleidoscopic nature of possibilities.
