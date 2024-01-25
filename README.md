@@ -1,4 +1,6 @@
-﻿# KaleidoHub
+<img src="https://github.com/Ninja-Cyborg/spring_react_application/assets/66517017/6a85363f-2258-4b59-a468-e3d3ea6ef1a6" width="200"/>
+
+# KaleidoHub
 A Kaleidoscopic Web Experience.
  > *Scroll to the bottom for a fun-fact*
 
