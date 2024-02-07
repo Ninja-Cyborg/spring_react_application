@@ -17,7 +17,8 @@ public class MemberRowMapper implements RowMapper {
                 rs.getString("email"),
                 rs.getString("password"),
                 rs.getInt("age"),
-                Gender.valueOf(rs.getString("gender"))
+                Gender.valueOf(rs.getString("gender")),
+                rs.getString("profile_image_id")
         );
     }
 }

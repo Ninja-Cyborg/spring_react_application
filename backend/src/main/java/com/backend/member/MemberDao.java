@@ -12,4 +12,5 @@ public interface MemberDao {
     boolean existsMemberWithEmail(String email);
     boolean existsMemberWithId(Integer id);
     Optional<Member> selectUserByEmail(String email);
+    void updateMemberProfileImageId(String profileImageId, Integer id);
 }

@@ -1,0 +1,18 @@
+package com.backend.s3;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@ConfigurationProperties(prefix="aws.s3.buckets")
+public class S3Buckets {
+    private String member;
+
+    public String getMember(){
+        return member;
+    }
+
+    public void setMember(String member){
+        this.member = member;
+    }
+}

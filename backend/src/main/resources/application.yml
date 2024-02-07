@@ -9,6 +9,17 @@ cors:
   allowed-headers: "*"
   exposed-headers: "*"
 
+provider:
+  name: aws
+  profile: profile pool2
+
+aws:
+  region: us-east-1
+  s3:
+    mock: true
+    buckets:
+      member: cloud-app-file-storage
+
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/member
@@ -26,3 +37,9 @@ spring:
     show-sql: true
   main:
     web-application-type: servlet
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+  codec:
+    max-in-memory-size: 10MB

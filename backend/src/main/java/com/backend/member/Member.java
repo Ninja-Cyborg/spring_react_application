@@ -14,7 +14,12 @@ import java.util.Objects;
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "member_email_uniq",
-                        columnNames = "email")
+                        columnNames = "email"
+                ),
+                @UniqueConstraint(
+                        name = "profile_image_id_uniq",
+                        columnNames = "profileImageId"
+                )
         })
 public class Member implements UserDetails {
     @Id
@@ -35,9 +40,10 @@ public class Member implements UserDetails {
     @Column
     @Enumerated(EnumType.STRING)
     private Gender gender;
-
     @Column(nullable = false)
     private String password;
+    @Column(unique = true)
+    private String profileImageId;
 
     public Member(){}
 
@@ -49,7 +55,23 @@ public class Member implements UserDetails {
         this.gender = gender;
     }
 
-    public Member(Integer id, String name, String email, String password, Integer age, Gender gender) {
+    public Member(Integer id,
+                  String name,
+                  String email,
+                  String password,
+                  Integer age,
+                  Gender gender,
+                  String profileImageId) {
+        this(id, name, email, password, age, gender);
+        this.profileImageId = profileImageId;
+    }
+
+    public Member(Integer id,
+                  String name,
+                  String email,
+                  String password,
+                  Integer age,
+                  Gender gender) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -98,17 +120,25 @@ public class Member implements UserDetails {
         this.gender = gender;
     }
 
+    public void setProfileImage(String profileImageId){
+        this.profileImageId = profileImageId;
+    }
+
+    public String getProfileImageId(){
+        return profileImageId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Member member = (Member) o;
-        return Objects.equals(id, member.id) && Objects.equals(name, member.name) && Objects.equals(email, member.email) && gender == member.gender && Objects.equals(age, member.age);
+        return Objects.equals(id, member.id) && Objects.equals(name, member.name) && Objects.equals(email, member.email) && Objects.equals(age, member.age) && gender == member.gender && Objects.equals(password, member.password) && Objects.equals(profileImageId, member.profileImageId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, email, gender, age);
+        return Objects.hash(id, name, email, age, gender, password, profileImageId);
     }
 
     @Override
@@ -117,8 +147,10 @@ public class Member implements UserDetails {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", email='" + email + '\'' +
-                ", gender=" + gender +
                 ", age=" + age +
+                ", gender=" + gender +
+                ", password='" + password + '\'' +
+                ", profileImageId='" + profileImageId + '\'' +
                 '}';
     }
 

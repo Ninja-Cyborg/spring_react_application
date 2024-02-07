@@ -130,4 +130,18 @@ class MemberJPADataAccessServiceTest {
 
         verify(memberRepository).existsMemberById(id);
     }
+
+    @Test
+    void canUpdateMemberProfileImageId(){
+        // Given
+        String profileImageId = "3241";
+        int id = 1;
+
+        // When
+        underTest.updateMemberProfileImageId(profileImageId, id);
+
+        // Then
+
+        verify(memberRepository).updateProfileImageId(profileImageId, id);
+    }
 }

@@ -9,6 +9,6 @@ public record MemberDTO(
         Integer age,
         Gender gender,
         List<String> roles,
-        String username
-) {
+        String username,
+        String profileImageId) {
 }

@@ -17,6 +17,7 @@ import {useAuth} from "../context/AuthContext.jsx";
 import {errorNotification} from "../../services/notification.js";
 import {useNavigate} from "react-router-dom";
 import {useEffect} from "react";
+import appLogo from "../../assets/app_logo.jpg"
 
 const MyTextInput = ({label, ...props}) => {
     const [field, meta] = useField(props);
@@ -116,7 +117,7 @@ const Login = () => {
             <Flex p={8} flex={1} align={'center'} justify={'center'}>
                 <Stack spacing={4} w={'full'} maxW={'md'}>
                     <Image
-                    src={""}
+                    src={appLogo}
                     boxSize={"200px"}
                     alt={"Logo"}
                     alignSelf={"center"}
@@ -126,16 +127,6 @@ const Login = () => {
                     Don't have an account?
                     <Link color={"blue.500"} href={"/signup"}> Signup now. </Link>
                 </Stack>
-            </Flex>
-             {/*remove flex?*/}
-            <Flex >
-                <Image
-                    alt={'Login Image'}
-                    objectFit={'cover'}
-                    src={
-                        ''
-                    }
-                />
             </Flex>
         </Stack>
     );

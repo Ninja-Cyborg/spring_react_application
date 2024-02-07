@@ -21,7 +21,8 @@ public class MemberDTOMapper implements Function<Member, MemberDTO> {
                 member.getAuthorities()
                         .stream().map(GrantedAuthority::getAuthority)
                         .collect(Collectors.toList()),
-                member.getUsername()
+                member.getUsername(),
+                member.getProfileImageId()
         );
     }
 }

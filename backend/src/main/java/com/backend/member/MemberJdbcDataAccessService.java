@@ -20,7 +20,7 @@ public class MemberJdbcDataAccessService implements MemberDao {
     @Override
     public List<Member> selectAllMembers() {
         var sql = """
-                SELECT id, name, email, password, age, gender
+                SELECT id, name, email, password, age, gender, profile_image_id
                 FROM member
                 LIMIT 1000
                 """;
@@ -44,7 +44,7 @@ public class MemberJdbcDataAccessService implements MemberDao {
     public void insertMember(Member member) {
         var sql = """
                 INSERT INTO member(name, email, password, age, gender)
-                VALUES (?,?,?,?,?)
+                VALUES (?,?,?,?,?,?)
                 """;
         jdbcTemplate.update(sql,
                 member.getName(),
@@ -112,12 +112,22 @@ public class MemberJdbcDataAccessService implements MemberDao {
     @Override
     public Optional<Member> selectUserByEmail(String email) {
         var sql = """
-                SELECT id, name, email, password, age, gender
+                SELECT id, name, email, password, age, gender, profile_image_id
                 FROM member
                 WHERE email = ?
                 """;
 
         return jdbcTemplate.query(sql, memberRowMapper, email)
                 .stream().findFirst();
+    }
+
+    @Override
+    public void updateMemberProfileImageId(String profileImageId, Integer id) {
+        var sql = """
+                UPDATE member
+                SET profile_image_id = ?
+                where id = ?
+                """;
+        jdbcTemplate.update(sql, profileImageId, id);
     }
 }

@@ -28,14 +28,16 @@ import {
     FiMenu,
     FiSettings,
     FiUsers,
-    FiStar
+    FiStar, FiSearch
 } from 'react-icons/fi';
 import {useAuth} from "../context/AuthContext.jsx";
+import appLogo from "../../assets/app_logo.jpg"
 
 const LinkItems = [
     {name: 'Home', route: '/dashboard', icon: FiHome},
     {name: 'Members', route: '/dashboard/members', icon: FiUsers},
-    // {name: 'Favourites', route: '/dashboard/favourites', icon: FiStar},
+    {name: 'Favourites', route: '/dashboard/favourites', icon: FiStar},
+    {name: 'Search', route: '/dashboard/search', icon: FiSearch},
     {name: 'Settings', route: '/dashboard/settings', icon: FiSettings},
 ];
 
@@ -86,7 +88,7 @@ const SidebarContent = ({onClose, ...rest}) => {
                 <Image
                     borderRadius='full'
                     boxSize='75px'
-                    src='https://th.bing.com/th/id/OIP.aSlG6mVZFAzTkAjS5oLudwHaEK?pid=ImgDet&rs=1'
+                    src={appLogo}
                     alt='Member'
                 />
                 <CloseButton display={{base: 'flex', md: 'none'}} onClick={onClose}/>
@@ -177,7 +179,7 @@ const MobileNav = ({onOpen, ...rest}) => {
                                 <Avatar
                                     size={'sm'}
                                     src={
-                                        'https://images.unsplash.com/photo-1619946794135-5bc917a27793?ixlib=rb-0.3.5&q=80&fm=jpg&crop=faces&fit=crop&h=200&w=200&s=b616b2c5b373a80ffc9636ba24f7a4a9'
+                                        'https://images.unsplash.com/photo-1665042099439-39d93c1117e6?q=80&w=1456&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
                                     }
                                 />
                                 <VStack

@@ -9,6 +9,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
@@ -83,5 +85,34 @@ class MemberRepositoryTest extends AbstractTestContainer {
         var actual = repoUnderTest.existsMemberById(id);
 
         assertThat(actual).isFalse();
+    }
+
+    @Test
+    void canUpdateProfileImageId(){
+        // Given
+        String email = FAKER.internet().safeEmailAddress();
+        Member member = new Member(
+                FAKER.name().fullName(),
+                email,
+                "password", FAKER.number().numberBetween(16,75),
+                Gender.NA);
+        repoUnderTest.save(member);
+
+        int id = repoUnderTest.findAll()
+                .stream()
+                .filter(c -> c.getEmail().equals(email))
+                .map(Member::getId)
+                .findFirst()
+                .orElseThrow();
+
+        // When
+        repoUnderTest.updateProfileImageId( "2145", id);
+
+        // Then
+        Optional<Member> memberOptional = repoUnderTest.findById(id);
+
+        assertThat(memberOptional).isPresent().hasValueSatisfying(
+                m -> assertThat(m.getProfileImageId()).isEqualTo("2145")
+        );
     }
 }

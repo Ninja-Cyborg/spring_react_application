@@ -3,14 +3,21 @@ package com.backend.member;
 import com.backend.exceptions.DuplicateResourceException;
 import com.backend.exceptions.RequestValidationException;
 import com.backend.exceptions.ResourceNotFoundException;
+import com.backend.s3.S3Buckets;
+import com.backend.s3.S3Service;
+import org.assertj.core.api.ThrowableAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.internal.verification.NoMoreInteractions;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,10 +33,19 @@ class MemberServiceTest {
     private PasswordEncoder passwordEncoder;
     private MemberService underTest;
     private final MemberDTOMapper memberDTOMapper = new MemberDTOMapper();
+    @Mock
+    private S3Buckets s3Buckets;
+    @Mock
+    private S3Service s3Service;
 
     @BeforeEach
     void setUp() {
-        underTest = new MemberService(memberDao, passwordEncoder, memberDTOMapper);
+        underTest = new MemberService(
+                memberDao,
+                passwordEncoder,
+                memberDTOMapper,
+                s3Service,
+                s3Buckets);
     }
 
     @Test
@@ -46,8 +62,7 @@ class MemberServiceTest {
                 id, "Jay","Jay@email.co", "password", 25, Gender.MALE
                 );
 
-        when(memberDao.selectMemberById(id))
-                .thenReturn(Optional.of(member));
+        when(memberDao.selectMemberById(id)).thenReturn(Optional.of(member));
 
         MemberDTO expected = memberDTOMapper.apply(member);
 
@@ -129,6 +144,19 @@ class MemberServiceTest {
     }
 
     @Test
+    void willThrowDeleteMemberByIdIfNotExist() {
+        int id = 10;
+
+        when(memberDao.existsMemberWithId(id)).thenReturn(false);
+
+        assertThatThrownBy(() -> underTest.deleteMemberById(id))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessage("member with id [%s] does not exist".formatted(id));
+
+        verify(memberDao, never()).deleteMemberById(id);
+    }
+
+    @Test
     void updateMember() {
         int id = 8;
         String email = "jo@mail.corp";
@@ -153,7 +181,6 @@ class MemberServiceTest {
         assertThat(capturedMember.getName()).isEqualTo(updateRequest.name());
         assertThat(capturedMember.getEmail()).isEqualTo(updateRequest.email());
         assertThat(capturedMember.getAge()).isEqualTo(updateRequest.age());
-
     }
 
     @Test
@@ -174,5 +201,159 @@ class MemberServiceTest {
 
         // verify members do not change
         verify(memberDao, never()).updateMember(any());
+    }
+
+    @Test
+    public void canUploadProfileImage() throws IOException {
+        // Given
+        int id = 12;
+
+        when(memberDao.existsMemberWithId(id)).thenReturn(true);
+
+        byte[] fileDataInBytes = "Test file".getBytes();
+        MultipartFile multipartFile = new MockMultipartFile("file", fileDataInBytes);
+
+        String bucket = "member-bucket";
+        when(s3Buckets.getMember()).thenReturn(bucket);
+
+        // when
+        underTest.uploadMemberProfileImage(id, multipartFile);
+
+        // then
+        // capture profileImageId
+        ArgumentCaptor<String> profileImageIdArgumentCaptor = ArgumentCaptor.forClass(String.class);
+
+        verify(memberDao).updateMemberProfileImageId(
+                profileImageIdArgumentCaptor.capture(),
+                eq(id)
+        );
+
+        // MemberService file naming convention: "profile-image/%s/%s".formatted(id, profileImageId)
+        String fileKeyCaptured = "profile-image/%s/%s".formatted(id, profileImageIdArgumentCaptor.getValue());
+
+        verify(s3Service).putObject(bucket, fileKeyCaptured, fileDataInBytes);
+    }
+
+    @Test
+    void cannotUploadProfileImageWhenMemberDoesNotExists(){
+        // Given
+        int id = 19;
+
+        when(memberDao.existsMemberWithId(id)).thenReturn(false);
+
+        // When
+        assertThatThrownBy(() -> underTest.uploadMemberProfileImage(
+                id, mock(MultipartFile.class))
+        )
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessage("member with id [%s] does not exist".formatted(id));
+
+        // Then
+        verify(memberDao).existsMemberWithId(id);
+        verifyNoMoreInteractions(memberDao);
+        verifyNoInteractions(s3Buckets);
+        verifyNoInteractions(s3Service);
+    }
+
+    @Test
+    void cannotUploadProfileImageWhenExceptionIsThrown() throws IOException{
+        // Given
+        int id = 19;
+
+        when(memberDao.existsMemberWithId(id)).thenReturn(true);
+
+        MultipartFile multipartFile = mock(MultipartFile.class);
+        when(multipartFile.getBytes()).thenThrow(IOException.class);
+
+        String bucket = "member-bucket";
+        when(s3Buckets.getMember()).thenReturn(bucket);
+
+        // When
+        assertThatThrownBy(() -> {
+            underTest.uploadMemberProfileImage(id, multipartFile);
+        }).isInstanceOf(RuntimeException.class)
+                .hasMessage("failed to upload profile image")
+                .hasRootCauseInstanceOf(IOException.class);
+
+        // Then
+        verify(memberDao, never()).updateMemberProfileImageId(any(), any());
+    }
+
+    @Test
+    void canDownloadProfileImage() {
+        // Given
+        int id = 19;
+        String profileImageId = "24132";
+        Member member = new Member(
+               id,
+                "",
+                "ninja00@ninja.go",
+                "password",
+                19,
+                Gender.FEMALE,
+                profileImageId
+        );
+
+        when(memberDao.selectMemberById(id)).thenReturn(Optional.of(member));
+
+        String bucket = "member-bucket";
+        when(s3Buckets.getMember()).thenReturn(bucket);
+
+        byte[] expectedFile = "Profile-Image".getBytes();
+
+        String fileKey = "profile-image/%s/%s".formatted(id, profileImageId);
+
+        when(s3Service.getObject(
+                bucket,
+                fileKey)
+        ).thenReturn(expectedFile);
+
+        // When
+        byte[] actualFile = underTest.getMemberProfileImage(id);
+
+        // Then
+        assertThat(actualFile).isEqualTo(expectedFile);
+    }
+
+    @Test
+    void cannotDownloadWhenNoProfileImageId(){
+        // Given
+        int id = 19;
+        Member member = new Member(
+                id,
+                "",
+                "ninja00@ninja.go",
+                "password",
+                19,
+                Gender.FEMALE
+        );
+
+        when(memberDao.selectMemberById(id)).thenReturn(Optional.of(member));
+
+        // WHEN
+        // THEN
+        assertThatThrownBy(() -> underTest.getMemberProfileImage(id))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessage("No Profile Image exits for member with id [%s]".formatted(id));
+
+        verifyNoInteractions(s3Buckets);
+        verifyNoInteractions(s3Service);
+    }
+
+    @Test
+    void cannotDownloadProfileImageWhenMemberDoesNotExists() {
+        // Given
+        int id = 19;
+
+        when(memberDao.selectMemberById(id)).thenReturn(Optional.empty());
+
+        // When
+        // Then
+        assertThatThrownBy(() -> underTest.getMemberProfileImage(id))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessage("member with id [%s] not found".formatted(id));
+
+        verifyNoInteractions(s3Buckets);
+        verifyNoInteractions(s3Service);
     }
 }

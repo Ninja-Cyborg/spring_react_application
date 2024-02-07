@@ -3,6 +3,8 @@ package com.backend;
 import com.backend.member.Gender;
 import com.backend.member.Member;
 import com.backend.member.MemberRepository;
+import com.backend.s3.S3Buckets;
+import com.backend.s3.S3Service;
 import com.github.javafaker.Faker;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -21,25 +23,44 @@ public class Main {
     }
 
     @Bean
-    CommandLineRunner runner(MemberRepository memberRepository, PasswordEncoder passwordEncoder){
+    CommandLineRunner runner(MemberRepository memberRepository,
+                             PasswordEncoder passwordEncoder){
         return args -> {
-            Faker faker = new Faker();
-            Random random = new Random();
-            String name = faker.name().fullName().toLowerCase();
-            String email = faker.internet().safeEmailAddress();
-            int age = random.nextInt(18,76);
-            Gender gender = Gender.MALE;
-
-            Member john = new Member(
-                    name,
-                    email,
-                    passwordEncoder.encode("password"),
-                    age,
-                    gender);
-
-            List<Member> members = List.of(john);
-            memberRepository.saveAll(members);
-            System.out.println(email);
+            createRandomMember(memberRepository, passwordEncoder);
+            //checkUploadAndDownload(s3Service, s3Buckets);
         };
+    }
+
+    private void checkUploadAndDownload(S3Service s3Service, S3Buckets s3Buckets) {
+        s3Service.putObject(s3Buckets.getMember(),
+                "up1",
+                "NinjaGO!".getBytes()
+        );
+
+        byte[] obj  = s3Service.getObject("cloud-app-file-storage",
+                "up1"
+        );
+
+        System.out.println("S3 object: " + new String(obj));
+    }
+
+    private void createRandomMember(MemberRepository memberRepository, PasswordEncoder passwordEncoder) {
+        Faker faker = new Faker();
+        Random random = new Random();
+        String name = faker.name().fullName().toLowerCase();
+        String email = faker.internet().safeEmailAddress();
+        int age = random.nextInt(18,76);
+        Gender gender = Gender.MALE;
+
+        Member john = new Member(
+                name,
+                email,
+                passwordEncoder.encode("password"),
+                age,
+                gender);
+
+        List<Member> members = List.of(john);
+        memberRepository.saveAll(members);
+        System.out.println(email);
     }
 }

@@ -1,8 +1,10 @@
 import {Form, Formik, useField} from 'formik';
 import * as Yup from 'yup';
-import {Alert, AlertIcon, Box, Button, FormLabel, Input, Select, Stack} from "@chakra-ui/react";
-import {saveMember, updateMember} from "../../services/client.js";
+import {Alert, AlertIcon, Box, Button, FormLabel, Image, Input, Stack, VStack} from "@chakra-ui/react";
+import {memberProfileImageUrl, updateMember, uploadProfileImage} from "../../services/client.js";
 import {successNotification, errorNotification} from "../../services/notification.js";
+import {useDropzone} from "react-dropzone";
+import {useCallback} from "react";
 
 const MyTextInput = ({label, ...props}) => {
     const [field, meta] = useField(props);
@@ -20,9 +22,58 @@ const MyTextInput = ({label, ...props}) => {
     );
 };
 
+const FileDropzone = ({id, fetchMembers}) => {
+    const onDrop = useCallback(acceptedFiles => {
+        const formData = new FormData();
+        formData.append("file", acceptedFiles[0])
+
+        uploadProfileImage(
+            id,
+            formData
+        ).then(() => {
+            successNotification("Success", "Profile picture uploaded")
+            fetchMembers() // updating current image in ui
+        }).catch(() => {
+            errorNotification("Error", "Failed to upload the image!")
+        })
+    }, [])
+    const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
+
+    return (
+        <Box {...getRootProps()}
+             w={'100%'}
+             textAlign={'center'}
+             border={'dashed'}
+             borderColor={'blue.200'}
+             borderRadius={'3xl'}
+             p={6}
+             rounded={'md'}
+        >
+            <input {...getInputProps()} />
+            {
+                isDragActive ?
+                    <p>Drop the files here ...</p> :
+                    <p>Drag 'n' drop Profile Image here, or click to select Image</p>
+            }
+        </Box>
+    )
+}
+
 const UpdateMemberForm = ({ fetchMembers, initialValues, memberId }) => {
     return (
         <>
+            <VStack spacing={'4'} mb={'5'}>
+                <Image
+                    borderRadius={'full'}
+                    boxSize={'150px'}
+                    objectFit={'cover'}
+                    src={memberProfileImageUrl(memberId)}
+                />
+                <FileDropzone
+                    id = {memberId}
+                    fetchMembers={fetchMembers}
+                />
+            </VStack>
             <Formik
                 initialValues={initialValues}
                 validationSchema={Yup.object({

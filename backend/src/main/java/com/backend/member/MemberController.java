@@ -2,8 +2,10 @@ package com.backend.member;
 
 import com.backend.jwt.JWTUtil;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -48,7 +50,22 @@ public class MemberController {
     @PutMapping("{id}")
     public void updateMember(@PathVariable("id") Integer id,
                              @RequestBody MemberUpdateRequest request){
-
         memberService.updateMember(id, request);
+    }
+
+    @PostMapping(
+            value = "{id}/profile-image",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public void uploadMemberProfileImage(
+            @PathVariable("id") Integer id,
+            @RequestParam("file")MultipartFile file){
+        memberService.uploadMemberProfileImage(id, file);
+    }
+
+    @GetMapping(
+            value = "{id}/profile-image",
+            produces = MediaType.IMAGE_JPEG_VALUE)
+    public byte[] getMemberProfileImage(@PathVariable("id") Integer id){
+        return memberService.getMemberProfileImage(id);
     }
 }

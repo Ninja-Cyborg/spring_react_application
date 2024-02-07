@@ -56,4 +56,9 @@ public class MemberJPADataAccessService implements MemberDao {
     public Optional<Member> selectUserByEmail(String email) {
         return memberRepository.findUserByEmail(email);
     }
+
+    @Override
+    public void updateMemberProfileImageId(String profileImageId, Integer id) {
+        memberRepository.updateProfileImageId(profileImageId, id);
+    }
 }
